@@ -1,0 +1,48 @@
+version: "3"
+
+networks:
+  loki:
+
+services:
+  loki:
+    image: grafana/loki:v0.3.0
+    restart: unless-stopped
+    volumes:
+      - ./loki.yaml:/etc/loki/config.yaml
+      - /var/log:/var/log
+      - ./data/loki:/data/loki
+    command: -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - loki
+    logging:
+      driver: json-file
+
+  promtail:
+    image: grafana/promtail:v0.3.0
+    restart: unless-stopped
+    volumes:
+      - ./promtail.yaml:/etc/promtail/config.yaml
+      - /var/log:/var/log
+      - ./data/promtail:/data/promtail
+    command: -config.file=/etc/promtail/config.yaml
+    ports:
+      - "9080:9080"
+    networks:
+      - loki
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:6.3.5
+    restart: unless-stopped
+    volumes:
+      - ./datasource.yaml:/etc/grafana/provisioning/datasources/loki.yaml
+      - ./data/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - loki
+    depends_on:
+      - loki
