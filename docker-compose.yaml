@@ -22,7 +22,7 @@ services:
     volumes:
       - ./promtail.yaml:/etc/promtail/config.yaml
       - /var/log:/var/log
-      - ./data/promtail:/data/promtail
+      - promtail:/data
     command: -config.file=/etc/promtail/config.yaml
     ports: ["9080:9080"]
     networks: [monitoring]
@@ -35,7 +35,7 @@ services:
     ports: ["3001:9090"]
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
-      - ./data/prometheus:/data/prometheus
+      - prometheus:/data
     networks: [monitoring]
 
   grafana:
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/loki.yaml
-      - ./data/grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
     ports: ["3000:3000"]
     networks: [monitoring]
 
