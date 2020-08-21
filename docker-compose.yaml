@@ -32,6 +32,7 @@ services:
     image: prom/prometheus:v2.20.1
     restart: unless-stopped
     command: --config.file=/etc/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/data --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
+    ports: ["3001:9090"]
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
       - ./data/prometheus:/data/prometheus
