@@ -4,7 +4,7 @@ networks:
   monitoring:
 
 volumes:
-  prometheus:
+  # prometheus:
   promtail:
   grafana:
 
@@ -40,14 +40,14 @@ services:
     ports: ["3001:9090"]
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
-      - prometheus:/data
+      # - prometheus:/data
     networks: [monitoring]
 
   grafana:
     image: grafana/grafana:6.6.2
     restart: unless-stopped
     volumes:
-      - ./datasource.yaml:/etc/grafana/provisioning/datasources/loki.yaml
+      - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
       - grafana:/var/lib/grafana
     ports: ["3000:3000"]
     networks: [monitoring]
