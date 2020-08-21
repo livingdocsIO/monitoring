@@ -16,11 +16,3 @@ scrape_configs:
     labels:
       job: varlogs
       __path__: /var/log/*log
-
-- job_name: events
-  static_configs:
-  - targets:
-      - localhost
-    labels:
-      job: events
-      __path__: /Users/marcbachmann/.dotfiles/.hammerspoon/event.log

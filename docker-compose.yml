@@ -23,7 +23,6 @@ services:
       - ./promtail.yaml:/etc/promtail/config.yaml
       - /var/log:/var/log
       - ./data/promtail:/data/promtail
-      - /Users/marcbachmann:/Users/marcbachmann
     command: -config.file=/etc/promtail/config.yaml
     ports: ["9080:9080"]
     networks: [monitoring]
@@ -32,7 +31,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.20.1
     restart: unless-stopped
-    command: --config.file=/etc/prometheus.yml --web.route-prefix=/ --storage.tsdb.path=/data --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
+    command: --config.file=/etc/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/data --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
       - ./data/prometheus:/data/prometheus
