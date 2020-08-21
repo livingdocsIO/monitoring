@@ -30,12 +30,12 @@ services:
     depends_on: [loki]
 
   prometheus:
-    image: grafana/prometheus:v1.0.0
+    image: prom/prometheus:v2.20.1
     restart: unless-stopped
+    command: --config.file=/etc/prometheus.yml --web.route-prefix=/ --storage.tsdb.path=/data --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
     volumes:
       - ./prometheus.yaml:/etc/prometheus.yaml
       - ./data/prometheus:/data/prometheus
-    command: -config.file=/etc/prometheus/config.yaml
     networks: [monitoring]
 
   grafana:
