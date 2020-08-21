@@ -1,48 +1,62 @@
 version: "3"
 
 networks:
-  loki:
+  monitoring:
 
 services:
   loki:
-    image: grafana/loki:v0.3.0
+    image: grafana/loki:v1.3.0
     restart: unless-stopped
     volumes:
       - ./loki.yaml:/etc/loki/config.yaml
       - /var/log:/var/log
-      - ./data/loki:/data/loki
     command: -config.file=/etc/loki/config.yaml
-    ports:
-      - "3100:3100"
-    networks:
-      - loki
+    ports: ["3100:3100"]
+    networks: [monitoring]
     logging:
       driver: json-file
 
   promtail:
-    image: grafana/promtail:v0.3.0
+    image: grafana/promtail:v1.0.0
     restart: unless-stopped
     volumes:
       - ./promtail.yaml:/etc/promtail/config.yaml
       - /var/log:/var/log
       - ./data/promtail:/data/promtail
+      - /Users/marcbachmann:/Users/marcbachmann
     command: -config.file=/etc/promtail/config.yaml
-    ports:
-      - "9080:9080"
-    networks:
-      - loki
-    depends_on:
-      - loki
+    ports: ["9080:9080"]
+    networks: [monitoring]
+    depends_on: [loki]
+
+  prometheus:
+    image: grafana/prometheus:v1.0.0
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus.yaml
+      - ./data/prometheus:/data/prometheus
+    command: -config.file=/etc/prometheus/config.yaml
+    networks: [monitoring]
 
   grafana:
-    image: grafana/grafana:6.3.5
+    image: grafana/grafana:6.6.2
     restart: unless-stopped
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/loki.yaml
       - ./data/grafana:/var/lib/grafana
-    ports:
-      - "3000:3000"
-    networks:
-      - loki
-    depends_on:
-      - loki
+    ports: ["3000:3000"]
+    networks: [monitoring]
+
+  cadvisor:
+    image: gcr.io/google_containers/cadvisor:v0.36.0
+    restart: unless-stopped
+    command: --docker_only=true --store_container_labels=false
+    ports: ["9081:8080"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks: [monitoring]
+    privileged: true

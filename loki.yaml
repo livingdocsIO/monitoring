@@ -1,11 +1,12 @@
 auth_enabled: false
 
 server:
+  http_listen_address: 0.0.0.0
   http_listen_port: 3100
 
 ingester:
   lifecycler:
-    address: 127.0.0.1
+    address: 0.0.0.0
     ring:
       kvstore:
         store: inmemory
@@ -49,4 +50,4 @@ table_manager:
     provisioned_read_throughput: 0
     provisioned_write_throughput: 0
   retention_deletes_enabled: true
-  retention_period: 360h
+  retention_period: 336h
