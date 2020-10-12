@@ -44,7 +44,7 @@ services:
     networks: [monitoring]
 
   grafana:
-    image: grafana/grafana:6.6.2
+    image: grafana/grafana:7.1.5
     restart: unless-stopped
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
