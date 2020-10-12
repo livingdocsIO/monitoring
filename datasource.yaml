@@ -12,3 +12,8 @@ datasources:
     type: prometheus
     access: proxy
     url: http://prometheus:9090
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686

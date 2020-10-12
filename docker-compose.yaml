@@ -65,3 +65,8 @@ services:
       - /dev/disk/:/dev/disk:ro
     networks: [monitoring]
     privileged: true
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports: ["6831:6831/udp", "16686:16686"]
+    networks: [monitoring]
