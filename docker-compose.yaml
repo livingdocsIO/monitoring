@@ -4,8 +4,7 @@ networks:
   monitoring:
 
 volumes:
-  # prometheus:
-  promtail:
+  prometheus:
   grafana:
 
 services:
@@ -21,26 +20,13 @@ services:
     logging:
       driver: json-file
 
-  promtail:
-    image: grafana/promtail:v1.0.0
+  vector:
+    image: timberio/vector:0.11.X-alpine
     restart: unless-stopped
     volumes:
-      - ./promtail.yaml:/etc/promtail/config.yaml
-      - /var/log:/var/log
-      - promtail:/data
-    command: -config.file=/etc/promtail/config.yaml
-    ports: ["9080:9080"]
-    networks: [monitoring]
-    depends_on: [loki]
-
-  prometheus:
-    image: prom/prometheus:v2.20.1
-    restart: unless-stopped
-    command: --config.file=/etc/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/data --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
-    ports: ["3001:9090"]
-    volumes:
-      - ./prometheus.yaml:/etc/prometheus.yaml
-      # - prometheus:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./vector.toml:/etc/vector/vector.toml:ro
+    ports: ["8383:8383", "1514:1514/udp"]
     networks: [monitoring]
 
   grafana:
@@ -48,6 +34,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
+      - ./dashboards:/etc/grafana/provisioning/dashboards
       - grafana:/var/lib/grafana
     ports: ["3000:3000"]
     networks: [monitoring]
