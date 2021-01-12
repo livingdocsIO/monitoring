@@ -1,0 +1,106 @@
+data_dir = "/etc/vector"
+
+[api]
+enabled = true
+address = "127.0.0.1:8686"
+
+[sources.internal_metrics]
+  type = "internal_metrics"
+
+[sources.syslog]
+  type = "syslog"
+  address = "0.0.0.0:1514"
+  max_length = 102400
+  mode = "udp"
+
+[sources.docker]
+type = "docker_logs"
+
+[transforms.docker_add_service]
+  type = "lua"
+  inputs = ["docker"]
+
+  version = "2"
+  hooks.process = "process"
+
+  source = """
+  function process(event, emit)
+    event.log.service = event.log.SERVICE or event.log.IO_RANCHER_STACK_SERVICE_NAME
+    if event.log.service then
+      return emit(event)
+    end
+
+    if event.log.COM_DOCKER_COMPOSE_PROJECT then
+      event.log.service = event.log.COM_DOCKER_COMPOSE_PROJECT .. "/" .. event.log.COM_DOCKER_COMPOSE_SERVICE
+      return emit(event)
+    end
+
+    emit(event)
+  end
+  """
+
+[transforms.json_detect_message]
+  type = "swimlanes"
+  inputs = ["docker_add_service", "syslog"]
+
+  [transforms.json_detect_message.lanes.no_json]
+    type = "check_fields"
+    "message.not_starts_with" = "{"
+
+  [transforms.json_detect_message.lanes.is_json]
+    type = "check_fields"
+    "message.starts_with" = "{"
+
+[transforms.json_parse_message]
+  type = "json_parser"
+  inputs = ["json_detect_message.is_json"]
+  drop_invalid = false
+  drop_field = false
+  field = "message"
+  target_field = "message_json"
+
+[transforms.json_extract_message_level]
+  type = "lua"
+  inputs = ["json_parse_message"]
+  version = "2"
+  hooks.process = "process"
+
+  source = """
+  levels = {}
+  raw_levels = {trace=10, debug=20, info=30, warn=40, error=50, fatal=60}
+  for key, val in pairs(raw_levels) do
+    levels[key] = key
+    levels[string.upper(key)] = key
+    levels[string.gsub(" "..key, "%W%l", string.upper):sub(2)] = key
+    levels[tostring(val)] = key
+    levels[val] = key
+  end
+
+  function process(event, emit)
+    if event.log.message_json and event.log.message_json.level then
+      event.log.level = levels[event.log.message_json.level]
+    end
+    emit(event)
+  end
+  """
+
+[sinks.loki]
+  type = "loki"
+  inputs = ["json_detect_message.no_json", "json_extract_message_level"]
+  healthcheck = true
+  encoding = "text"
+  endpoint = "http://loki:3100"
+
+  [sinks.loki.labels]
+    service = "{{ service }}"
+    container_id = "{{ container_id }}"
+    container_name = "{{ container_name }}"
+    container_image = "{{ image }}"
+    level = "{{ level }}"
+    stream = "{{ stream }}"
+    file = "{{ file }}"
+
+[sinks.prometheus]
+  type = "prometheus"
+  inputs = ["internal_metrics"]
+  address = "0.0.0.0:9160"
