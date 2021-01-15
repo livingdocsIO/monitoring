@@ -3,18 +3,30 @@ global:
   evaluation_interval: 5s
 
 scrape_configs:
-  - job_name: prometheus
+  - job_name: cadvisor
     static_configs:
-      - targets: ['prometheus:9090']
+      - targets: ['cadvisor:8080']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']
+
+  - job_name: jaeger
+    static_configs:
+      - targets: ['jaeger:14269']
 
   - job_name: livingdocs-server
     static_configs:
       - targets: ['host.docker.internal:9090']
 
-  - job_name: cadvisor
-    static_configs:
-      - targets: ['cadvisor:8080']
-
   - job_name: loki
     static_configs:
       - targets: ['loki:3100']
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  - job_name: vector
+    static_configs:
+      - targets: ['vector:9160']
