@@ -4,43 +4,14 @@ networks:
   monitoring:
 
 volumes:
-  prometheus:
   grafana:
+  jaeger:
+  loki:
+  prometheus:
 
 services:
-  loki:
-    image: grafana/loki:v1.3.0
-    restart: unless-stopped
-    volumes:
-      - ./loki.yaml:/etc/loki/config.yaml
-      - /var/log:/var/log
-    command: -config.file=/etc/loki/config.yaml
-    ports: ["3100:3100"]
-    networks: [monitoring]
-    logging:
-      driver: json-file
-
-  vector:
-    image: timberio/vector:0.11.X-alpine
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./vector.toml:/etc/vector/vector.toml:ro
-    ports: ["8383:8383", "1514:1514/udp"]
-    networks: [monitoring]
-
-  grafana:
-    image: grafana/grafana:7.1.5
-    restart: unless-stopped
-    volumes:
-      - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
-      - ./dashboards:/etc/grafana/provisioning/dashboards
-      - grafana:/var/lib/grafana
-    ports: ["3000:3000"]
-    networks: [monitoring]
-
   cadvisor:
-    image: gcr.io/google_containers/cadvisor:v0.36.0
+    image: gcr.io/cadvisor/cadvisor:v0.37.0
     restart: unless-stopped
     command: --docker_only=true --store_container_labels=false
     ports: ["9081:8080"]
@@ -53,7 +24,55 @@ services:
     networks: [monitoring]
     privileged: true
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports: ["6831:6831/udp", "6832:6832/udp", "16686:16686"]
+  grafana:
+    image: grafana/grafana:7.3.6
+    restart: unless-stopped
+    volumes:
+      - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
+      - ./dashboards:/etc/grafana/provisioning/dashboards
+      - grafana:/var/lib/grafana
+    ports: ["3000:3000"]
     networks: [monitoring]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.21.0
+    ports: ["6831:6831/udp", "6832:6832/udp", "14250:14250", "14269:14269", "16686:16686"]
+    volumes:
+      - jaeger:/badger
+    networks: [monitoring]
+    environment:
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_KEY=/badger/key
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_SPAN_STORE_TTL=168h0m0s
+
+  loki:
+    image: grafana/loki:2.1.0
+    restart: unless-stopped
+    volumes:
+      - ./loki.yaml:/etc/loki/local-config.yaml
+      - /var/log:/var/log:ro
+      - loki:/loki
+    ports: ["3100:3100"]
+    networks: [monitoring]
+
+  prometheus:
+    image: prom/prometheus:v2.24.0
+    restart: unless-stopped
+    command: --config.file=/etc/prometheus/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
+    ports: ["3001:9090"]
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - prometheus:/prometheus
+    networks: [monitoring]
+
+  vector:
+    image: timberio/vector:0.11.1-alpine
+    restart: unless-stopped
+    volumes:
+      - ./vector.toml:/etc/vector/vector.toml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
+    networks: [monitoring]
+    depends_on: [loki, prometheus]
