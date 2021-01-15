@@ -9,7 +9,7 @@ datasources:
       maxLines: 5000
       derivedFields:
         - datasourceUid: jaeger
-          matcherRegex: \\\"traceId\\\":\\\"(.+?)\\\"
+          matcherRegex: \"traceId\":\"([^"]+)\"
           name: traceId
           url: $${__value.raw}
 
