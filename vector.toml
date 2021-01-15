@@ -1,20 +1,25 @@
 data_dir = "/etc/vector"
 
 [api]
-enabled = true
-address = "127.0.0.1:8686"
+  enabled = true
+  address = "127.0.0.1:8686"
 
 [sources.internal_metrics]
   type = "internal_metrics"
 
-[sources.syslog]
-  type = "syslog"
-  address = "0.0.0.0:1514"
+[sources.livingdocs_server_socket]
+  type = "socket"
+  address = "0.0.0.0:4545"
   max_length = 102400
   mode = "udp"
 
 [sources.docker]
-type = "docker_logs"
+  type = "docker_logs"
+
+[transforms.livingdocs_server]
+  type = "add_fields"
+  inputs = ["livingdocs_server_socket"]
+  fields.service = "@livingdocs/server"
 
 [transforms.docker_add_service]
   type = "lua"
@@ -41,7 +46,7 @@ type = "docker_logs"
 
 [transforms.json_detect_message]
   type = "swimlanes"
-  inputs = ["docker_add_service", "syslog"]
+  inputs = ["docker_add_service", "livingdocs_server"]
 
   [transforms.json_detect_message.lanes.no_json]
     type = "check_fields"
@@ -92,6 +97,7 @@ type = "docker_logs"
   endpoint = "http://loki:3100"
 
   [sinks.loki.labels]
+    source_type = "{{ source_type }}"
     service = "{{ service }}"
     container_id = "{{ container_id }}"
     container_name = "{{ container_name }}"
@@ -101,6 +107,25 @@ type = "docker_logs"
     file = "{{ file }}"
 
 [sinks.prometheus]
-  type = "prometheus"
+  type = "prometheus_exporter"
   inputs = ["internal_metrics"]
   address = "0.0.0.0:9160"
+
+[[tests]]
+  name = "check_json_log"
+
+  [[tests.inputs]]
+    insert_at = "livingdocs_server"
+    type = "raw"
+    value = "{\"level\":30,\"time\":1610722316561,\"req\":{\"id\":\"W4zYBoTFNDSo-206\",\"method\":\"GET\",\"url\":\"/documents?document_type=article&limit=35&sort=-updated_at\",\"userAgent\":\"Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0\",\"remoteAddress\":\"127.0.0.1\",\"remotePort\":36620,\"ip\":\"127.0.0.1\"},\"traceId\":\"867e90eb8e9d7e98440cb29961399957\",\"res\":{\"statusCode\":304,\"userId\":\"1\",\"projectId\":\"3\",\"tokenId\":\"m4elDRnJwEMQFeBu\"},\"responseTime\":17,\"msg\":\"request completed\"}"
+
+  [[tests.outputs]]
+    extract_from = "json_extract_message_level"
+
+    [[tests.outputs.conditions]]
+      type = "check_fields"
+      "message.exists" = true
+      "message_json.exists" = true
+      "message_json.time.equals" = 1610722316561
+      "level.equals" = "info"
+      "service.equals" = "@livingdocs/server"
