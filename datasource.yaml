@@ -6,7 +6,12 @@ datasources:
     access: proxy
     url: http://loki:3100
     jsonData:
-      maxLines: 10000
+      maxLines: 5000
+      derivedFields:
+        - datasourceUid: jaeger
+          matcherRegex: \\\"traceId\\\":\\\"(.+?)\\\"
+          name: traceId
+          url: $${__value.raw}
 
   - name: Prometheus
     type: prometheus
@@ -17,3 +22,4 @@ datasources:
     type: jaeger
     access: proxy
     url: http://jaeger:16686
+    uid: jaeger
