@@ -3,12 +3,6 @@ version: "3"
 networks:
   monitoring:
 
-volumes:
-  grafana:
-  jaeger:
-  loki:
-  prometheus:
-
 services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.37.0
@@ -30,7 +24,7 @@ services:
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
       - ./dashboards:/etc/grafana/provisioning/dashboards
-      - grafana:/var/lib/grafana
+      - ./data/grafana:/var/lib/grafana
     ports: ["3000:3000"]
     networks: [monitoring]
 
@@ -39,7 +33,7 @@ services:
     restart: unless-stopped
     ports: ["6831:6831/udp", "6832:6832/udp", "14250:14250", "14269:14269", "16686:16686"]
     volumes:
-      - jaeger:/badger
+      - ./data/jaeger:/badger
     networks: [monitoring]
     environment:
       - SPAN_STORAGE_TYPE=badger
@@ -54,7 +48,7 @@ services:
     volumes:
       - ./loki.yaml:/etc/loki/local-config.yaml
       - /var/log:/var/log:ro
-      - loki:/loki
+      - ./data/loki:/loki
     ports: ["3100:3100"]
     networks: [monitoring]
 
@@ -68,13 +62,13 @@ services:
     networks: [monitoring]
 
   prometheus:
-    image: prom/prometheus:v2.24.0
+    image: prom/prometheus:v2.24.1
     restart: unless-stopped
-    command: --config.file=/etc/prometheus/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=90d --web.enable-lifecycle --web.enable-admin-api
+    command: --config.file=/etc/prometheus/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d --web.enable-lifecycle --web.enable-admin-api
     ports: ["3001:9090"]
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
-      - prometheus:/prometheus
+      - ./data/prometheus:/prometheus
     networks: [monitoring]
 
   vector:

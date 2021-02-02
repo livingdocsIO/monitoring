@@ -20,7 +20,7 @@
     }
   }
   ```
-- Launch loki, grafana and promtail*
+- Launch loki, grafana, jaeger, vector, opentelemetry-collector
   ```
   docker-compose up -d
   ```
