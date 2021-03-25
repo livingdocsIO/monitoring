@@ -36,6 +36,7 @@ services:
     volumes:
       - ./data/jaeger:/badger
     networks: [monitoring]
+    mem_limit: 512m
     environment:
       - SPAN_STORAGE_TYPE=badger
       - BADGER_EPHEMERAL=false
@@ -74,6 +75,7 @@ services:
       - ./data/prometheus:/prometheus
     networks: [monitoring]
     user: "1000:1000"
+    mem_limit: 512m
 
   vector:
     image: timberio/vector:0.11.1-alpine
@@ -84,3 +86,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: [monitoring]
     depends_on: [loki, prometheus]
+    mem_limit: 100m
