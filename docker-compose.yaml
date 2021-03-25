@@ -21,12 +21,13 @@ services:
   grafana:
     image: grafana/grafana:7.3.6
     restart: unless-stopped
+    ports: ["3000:3000"]
     volumes:
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/monitoring.yaml
       - ./dashboards:/etc/grafana/provisioning/dashboards
       - ./data/grafana:/var/lib/grafana
-    ports: ["3000:3000"]
     networks: [monitoring]
+    user: "1000:1000"
 
   jaeger:
     image: jaegertracing/all-in-one:1.21.0
@@ -41,24 +42,26 @@ services:
       - BADGER_DIRECTORY_KEY=/badger/key
       - BADGER_DIRECTORY_VALUE=/badger/data
       - BADGER_SPAN_STORE_TTL=168h0m0s
+    user: "1000:1000"
 
   loki:
     image: grafana/loki:2.1.0
     restart: unless-stopped
+    ports: ["3100:3100"]
     volumes:
       - ./loki.yaml:/etc/loki/local-config.yaml
       - /var/log:/var/log:ro
       - ./data/loki:/loki
-    ports: ["3100:3100"]
     networks: [monitoring]
+    user: "1000:1000"
 
   opentelemetry-collector:
     image: otel/opentelemetry-collector:0.18.0
     restart: unless-stopped
     command: --config=/conf/otel-collector.config.yaml
+    ports: ["9464:9464", "55680:55680", "55681:55681"]
     volumes:
       - ./otel-collector.yaml:/conf/otel-collector.config.yaml
-    ports: ["9464:9464", "55680:55680", "55681:55681"]
     networks: [monitoring]
 
   prometheus:
@@ -70,13 +73,14 @@ services:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
       - ./data/prometheus:/prometheus
     networks: [monitoring]
+    user: "1000:1000"
 
   vector:
     image: timberio/vector:0.11.1-alpine
     restart: unless-stopped
+    ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
     volumes:
       - ./vector.toml:/etc/vector/vector.toml
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
     networks: [monitoring]
     depends_on: [loki, prometheus]
