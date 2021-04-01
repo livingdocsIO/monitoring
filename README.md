@@ -16,32 +16,10 @@ The stack includes the following:
 
 ## Installation
 
-- Install the loki logging driver. See [Loki docs](https://grafana.com/docs/loki/latest/clients/docker-driver/) for further details.
+- Clone the repository and launch cAdvisor, Grafana, Jaeger, Loki, OpenTelemetry Collector, Prometheus, and Vector:
   ```sh
-  docker plugin install grafana/loki-docker-driver  --alias loki --grant-all-permissions
-  ```
-- Configure the docker daemon to use the loki logging driver, usually by editing the /etc/docker/daemon.json file. See [Loki docs](https://grafana.com/docs/loki/latest/clients/docker-driver/configuration/#change-the-default-logging-driver) for further details.
-  ```json
-  {
-    "experimental" : false,
-    "debug" : true,
-    "log-driver" : "loki",
-    "log-opts" : {
-      "loki-external-labels" : "container_name={{.Name}},container_id={{.ID}}",
-      "loki-url" : "http://host.docker.internal:3100/api/prom/push",
-      "loki-batch-size" : "400"
-    }
-  }
-  ```
-  > Note: Instead of configuring the driver to be the Docker default it can also be setup per container using `docker run --log-driver=loki` and `--log-opt loki-url="..."`, or by adding the following to each container in your docker-compose.yaml file:
-  > ```yaml
-  > logging:
-  >   driver: loki
-  >   options:
-  >     loki-url: "..."
-  > ```
-- Launch cAdvisor, Grafana, Jaeger, Loki, OpenTelemetry Collector, Prometheus, and Vector:
-  ```sh
+  git clone git@github.com:livingdocsIO/loki.git
+  cd loki
   docker-compose up -d
   ```
 - Navigate to <http://localhost:3000/> and log in using the default Grafana user (admin/admin).
