@@ -15,6 +15,10 @@ scrape_configs:
     static_configs:
       - targets: ['jaeger:14269']
 
+  - job_name: livingdocs-server
+    static_configs:
+      - targets: ['host.docker.internal:9090']
+
   - job_name: loki
     static_configs:
       - targets: ['loki:3100']
