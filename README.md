@@ -18,8 +18,8 @@ The stack includes the following:
 
 - Clone the repository and launch cAdvisor, Grafana, Jaeger, Loki, OpenTelemetry Collector, Prometheus, and Vector:
   ```sh
-  git clone git@github.com:livingdocsIO/loki.git
-  cd loki
+  git clone git@github.com:livingdocsIO/monitoring.git
+  cd monitoring
   docker-compose up -d
   ```
 - Navigate to <http://localhost:3000/> and log in using the default Grafana user (admin/admin).
