@@ -24,6 +24,15 @@ The stack includes the following:
   ```
 - Navigate to <http://localhost:3000/> and log in using the default Grafana user (admin/admin).
 
+## How to add livingdocs-server logs to Grafana/Loki
+
+Every log in <this-repo>/data/logs/*.log will be pushed to Grafana/Loki. You can start the Livingdocs Server and pipe the logs to the logs folder.
+
+Example: `logs__pretty=false npm run start | tee ~/livingdocs/monitoring/data/logs/livingdocs-server.log`
+
+Then you should see the logs with a Loki Query: `{file="/logs/livingdocs-server.log"}`
+
+
 ## Troubleshooting
 
 ### Directory permissions
