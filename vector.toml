@@ -13,6 +13,17 @@ data_dir = "/etc/vector"
   max_length = 102400
   mode = "udp"
 
+[sources.file_source]
+  type = "file"
+  ignore_older_secs = 600
+  include = [ "/logs/*.log" ]
+  read_from = "beginning"
+  # ignore the first bytes for the checksum (because they are equal)
+  # otherwise the log files are not imported to grafana
+  fingerprint.strategy = "checksum"
+  fingerprint.ignored_header_bytes = 1024
+  fingerprint.lines = 20
+
 [sources.docker]
   type = "docker_logs"
 
@@ -46,7 +57,7 @@ data_dir = "/etc/vector"
 
 [transforms.json_detect_message]
   type = "swimlanes"
-  inputs = ["docker_add_service", "livingdocs_server"]
+  inputs = ["file_source", "docker_add_service", "livingdocs_server"]
 
   [transforms.json_detect_message.lanes.no_json]
     type = "check_fields"

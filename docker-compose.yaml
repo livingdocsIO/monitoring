@@ -78,12 +78,15 @@ services:
     mem_limit: 512m
 
   vector:
-    image: timberio/vector:0.11.1-alpine
+    image: timberio/vector:0.18.0-alpine
     restart: unless-stopped
     ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
     volumes:
       - ./vector.toml:/etc/vector/vector.toml
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/logs:/logs
     networks: [monitoring]
     depends_on: [loki, prometheus]
     mem_limit: 100m
+    # environment:
+      # - VECTOR_LOG=debug
