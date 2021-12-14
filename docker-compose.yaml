@@ -5,7 +5,7 @@ networks:
 
 services:
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.37.0
+    image: gcr.io/cadvisor/cadvisor:v0.43.0
     restart: unless-stopped
     command: --docker_only=true --store_container_labels=false
     ports: ["9081:8080"]
@@ -19,7 +19,7 @@ services:
     privileged: true
 
   grafana:
-    image: grafana/grafana:7.3.6
+    image: grafana/grafana:8.3.2
     restart: unless-stopped
     ports: ["3000:3000"]
     volumes:
@@ -30,7 +30,7 @@ services:
     user: "1000:1000"
 
   jaeger:
-    image: jaegertracing/all-in-one:1.21.0
+    image: jaegertracing/all-in-one:1.29.0
     restart: unless-stopped
     ports: ["6831:6831/udp", "6832:6832/udp", "14250:14250", "14269:14269", "16686:16686"]
     volumes:
@@ -46,7 +46,7 @@ services:
     user: "1000:1000"
 
   loki:
-    image: grafana/loki:2.1.0
+    image: grafana/loki:2.4.1
     restart: unless-stopped
     ports: ["3100:3100"]
     volumes:
@@ -66,7 +66,7 @@ services:
     networks: [monitoring]
 
   prometheus:
-    image: prom/prometheus:v2.24.1
+    image: prom/prometheus:v2.31.2
     restart: unless-stopped
     command: --config.file=/etc/prometheus/prometheus.yaml --web.route-prefix=/ --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d --web.enable-lifecycle --web.enable-admin-api
     ports: ["3001:9090"]
@@ -78,7 +78,7 @@ services:
     mem_limit: 512m
 
   vector:
-    image: timberio/vector:0.18.0-alpine
+    image: timberio/vector:0.18.1-alpine
     restart: unless-stopped
     ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
     volumes:
