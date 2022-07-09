@@ -2,7 +2,7 @@
 
 This setup uses Loki for logs, Prometheus for metrics, and Jaeger for tracing. It will automatically collect logs from other Docker containers running on the same server if the installation steps below are followed.
 
-The Livingdocs server can be configured to send metrics data to the stack, and there is also a way to send log data when running the service without the use of Docker (for local development purposes). More details can be found in the [Livingdocs documentation](https://docs.livingdocs.io/).
+The Livingdocs Server can be configured to send metrics data to the stack, and there is also a way to send log data when running the service without the use of Docker (for local development purposes). More details can be found in the [Livingdocs Server telemetry documentation](https://docs.livingdocs.io/operations/telemetry/#setup).
 
 The stack includes the following:
 
