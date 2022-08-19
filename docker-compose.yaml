@@ -5,7 +5,7 @@ networks:
 
 services:
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.43.0
+    image: gcr.io/cadvisor/cadvisor:v0.45.0
     restart: unless-stopped
     command: --docker_only=true --store_container_labels=false
     ports: ["9081:8080"]
@@ -57,7 +57,7 @@ services:
     user: "1000:1000"
 
   opentelemetry-collector:
-    image: otel/opentelemetry-collector:0.18.0
+    image: otel/opentelemetry-collector:0.58.0
     restart: unless-stopped
     command: --config=/conf/otel-collector.config.yaml
     ports: ["9464:9464", "55680:55680", "55681:55681"]
