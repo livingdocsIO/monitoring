@@ -30,7 +30,7 @@ services:
     user: "1000:1000"
 
   jaeger:
-    image: jaegertracing/all-in-one:1.29.0
+    image: jaegertracing/all-in-one:1.30.0
     restart: unless-stopped
     ports: ["6831:6831/udp", "6832:6832/udp", "14250:14250", "14269:14269", "16686:16686"]
     volumes:
@@ -49,6 +49,7 @@ services:
     image: grafana/loki:2.4.1
     restart: unless-stopped
     ports: ["3100:3100"]
+    mem_limit: 512m
     volumes:
       - ./loki.yaml:/etc/loki/local-config.yaml
       - /var/log:/var/log:ro
@@ -78,7 +79,7 @@ services:
     mem_limit: 512m
 
   vector:
-    image: timberio/vector:0.18.1-alpine
+    image: timberio/vector:0.23.3-alpine
     restart: unless-stopped
     ports: ["8383:8383", "8686:8686", "9160:9160", "4545:4545/udp"]
     volumes:
